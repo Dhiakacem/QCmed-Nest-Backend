@@ -1,3 +1,4 @@
+import { UsersService } from 'src/users/users.service'; // Import UsersService
 import {
   Controller,
   Post,
@@ -15,7 +16,10 @@ import { plainToClass } from 'class-transformer';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly usersService: UsersService // Inject UsersService
+  ) {}
 
   @Post('login')
   async login(@Body() loginDto: LoginDto) {
@@ -31,9 +35,10 @@ export class AuthController {
 
   @Get('info')
   @UseGuards(JwtAuthGuard) // Protect the route with JWT guard
-  getUserInfo(@Request() req): UserDto {
-    const user = req.user; // This is the user object, populated by the JWT strategy
-    // Convert the user object into the UserDto class, excluding the password
-    return plainToClass(UserDto, user);
+  async getUserInfo(@Request() req): Promise<UserDto> {
+    const userId = req.user.sub; // 'sub' from JWT payload, which is the user ID
+    const user = await this.usersService.findById(userId); // Fetch user from DB using usersService
+
+    return user; // The response will be transformed into UserDto automatically
   }
 }

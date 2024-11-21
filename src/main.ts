@@ -7,6 +7,5 @@ async function bootstrap() {
   await app.listen(process.env.PORT ?? 8000);
 
   dotenv.config(); // Ensure .env is loaded
-  console.log('JWT_SECRET_KEY:', process.env.JWT_SECRET_KEY);
 }
 bootstrap();

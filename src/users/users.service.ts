@@ -5,6 +5,8 @@ import { User } from './schemas/user.schema';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcrypt';
+import { plainToClass } from 'class-transformer';
+import { UserDto } from './dto/user.dto';
 @Injectable()
 export class UsersService {
   constructor(@InjectModel('User') private readonly userModel: Model<User>) {}
@@ -73,8 +75,13 @@ export class UsersService {
     return user;
   }
 
-  async findById(id: string): Promise<User | null> {
-    console.log('Looking for user with ID:', id);
-    return this.userModel.findById(id).exec();
+  async findById(id: string): Promise<UserDto> {
+    const user = await this.userModel.findById(id).exec();
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+
+    // Transform the Mongoose model to a UserDto
+    return plainToClass(UserDto, user);
   }
 }
